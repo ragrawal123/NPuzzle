@@ -51,19 +51,30 @@ def validIndex(t,n):
     return r <=n-1 and c <= n-1 and r >= 0 and c >= 0
         
 def isGoal(state):
-    # largest = 0
-    # for element in state:
-    #     if element !< largest:
-    #         return False
-    #     elif element == "*":
-    #         return False
-    #     else:
-    #         largest = element
-    # return True
+    largest = [0][0]
+    (r,c) = findHole(state)
+    state[r][c] = 100000000
+    n = len(state)
+    oneList = []
+    for row in state:
+        for col in row:
+            oneList.append(int(col))
+    if oneList == sorted(oneList):
+        return True
+    else:
+        return False
+
+                
+def BFS(state):
+
+
+
+
 
 def main():
     b = LoadFromFile("test.txt")
     DebugPrint(b)
     ComputeNeighbors(b)
+    print(isGoal(b))
 
 main()

@@ -66,6 +66,22 @@ def isGoal(state):
 
                 
 def BFS(state):
+    frontier = [state]
+    discovered = set(state)
+    parents = {state: None}
+    current_state = [][]
+    while len(frontier) != 0:
+        current_state = frontier.pop(0)
+        discovered.append(current_state)
+        if IsGoal(current_state):
+            return current_state
+            return the path you need by backtracking in parents
+        for neighbor in ComputeNeighbors(current_state):
+            if the neighbor isn't already in the discovered set
+                add the neighbor to the end of the frontier
+                mark the neighbor as discovered
+                add neighbor: current_state to the parents map
+
 
 
 

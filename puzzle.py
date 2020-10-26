@@ -37,6 +37,7 @@ def DebugPrint(state):
             s += number + "    "
         print(s)
         s = ""
+
 #arguments: 2d tuple of board
 #returns: 2d tuple of board
 def FindHole(state):
@@ -58,24 +59,20 @@ def switch(state, hole, switched):
 #arguments: 2d tuple of board
 #returns: 2d tuple of resulting neighbor moves, ((int, 1d list))
 def ComputeNeighbors(state):
-    value = []
+    neighbor = []
     hole = []
     hole = FindHole(state)
     row, col = hole
-    #check above
-    if row - 1 >= 0:
-        value.append([state[row - 1][col], switch(state, hole, (row - 1, col))])
-    #below
-    if row + 1 <= len(state) -1:
-        value.append([state[row + 1][col], switch(state, hole, (row + 1, col))])
-    #left
-    if col - 1 >= 0:
-        value.append([state[row][col - 1], switch(state, hole, (row, col - 1))])
-    #right
     if col + 1 <= len(state) -1:
-        value.append([state[row][col + 1], switch(state, hole, (row, col + 1))])
-
-    return value
+        neighbor.append([state[row][col + 1], switch(state, hole, (row, col + 1))])
+    if col - 1 >= 0:
+        neighbor.append([state[row][col - 1], switch(state, hole, (row, col - 1))])
+    if row + 1 <= len(state) -1:
+        neighbor.append([state[row + 1][col], switch(state, hole, (row + 1, col))])
+    if row - 1 >= 0:
+        neighbor.append([state[row - 1][col], switch(state, hole, (row - 1, col))])
+    
+    return neighbor
 
 #arguments: 2d tuple of board
 #returns: return True/False, is the state the goal state
@@ -158,53 +155,40 @@ def findGoal(n):
 #arguments: 2d tuple of board
 #returns: 1d array of tile path to reach goal
 def bidirectionalsearch(state):
-    Goal = findGoal(len(state))
-    frontier1 = [(0, state)]
-    frontier2 = [(0, Goal)]
-    discovered1 = set(state)
-    discovered2 = set(Goal)
-    parents1 = {(0, state): None}
-    parents2 = {(0, Goal): None}
+    goal = findGoal(len(state))
+    frontier = [(0, state)]
+    frontier2 = [(0, goal)]
+    discovered1 = set([state])
+    discovered2 = set([goal])
+    parents1 = {state: []}
+    parents2 = {goal: []}
     path = []
+    while len(frontier) != 0 and len(frontier2) != 0:
+        currentState1 = frontier.pop(0)
+        currentState2 = frontier2.pop(0)
+        
+        discovered1.add(currentState1[1])
+        discovered2.add(currentState2[1])
+            
+        if len(discovered1.intersection(discovered2)) > 0:
+            intersect = list(discovered1.intersection(discovered2))[0]
+            forwardPath = parents1[intersect]
+            backwardsPath = list(reversed(parents2[intersect]))
+            return forwardPath + backwardsPath
 
-    while frontier1 and frontier2:
-    #while len(frontier1) != 0 or len(frontier2) != 0:
-        current_state1 = frontier1.pop(0)
-        current_state2 = frontier2.pop(0)
-        discovered1.add(current_state1[1])
-        discovered2.add(current_state2[1])
-        intersection = discovered1.intersection(discovered2)
 
-        if(len(intersection) > 0):
-#            intersectionPoint = intersection[0]
-#            forwardPath = parents1[intersectionPoint]
-#            backwardsPath = list(reversed(parents2[intersectionPoint]))
-#            return forwardPath + backwardsPath
-            if IsGoal(current_state1[1]):
-                while parents1.get((current_state1[0], current_state1[1])) != None:
-                    path.insert(0, current_state1[0])
-                    current_state1 = parents1.get((current_state1[0], current_state1[1]))
-            else:
-                while parents2.get((current_state2[0], current_state2[1])) != None:
-                    path.insert(0, current_state2[0])
-                    current_state2 = parents2.get((current_state2[0], current_state2[1]))
-            return path
-        for neighbor in ComputeNeighbors(current_state1[1]):
+        for neighbor in ComputeNeighbors(currentState1[1]):
             if neighbor[1] not in discovered1:
-                frontier1.append(neighbor)
+                frontier.append(neighbor)
                 discovered1.add(neighbor[1])
-                parents1.update({(neighbor[0], neighbor[1]): current_state2})
-                #parents1[neighbor[1]] = (neighbor[0], current_state1[1])
+                parents1.update({neighbor[1]: parents1[currentState1[1]] + [neighbor[0]]})
 
-        for neighbor in ComputeNeighbors(current_state2[1]):
+        for neighbor in ComputeNeighbors(currentState2[1]):
             if neighbor[1] not in discovered2:
                 frontier2.append(neighbor)
                 discovered2.add(neighbor[1])
-                parents2.update({(neighbor[0], neighbor[1]): current_state2})
-                #print("Hello")
-                #print("cool")
-                #parents2[neighbor[1]] = (neighbor[0], current_state2[1])
-    print("FAIL")
+                parents2.update({neighbor[1]: parents2[currentState2[1]] + [neighbor[0]]})
+
     return None
 
 
